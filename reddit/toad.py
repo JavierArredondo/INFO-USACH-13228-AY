@@ -2,6 +2,7 @@ from confluent_kafka import admin, Producer
 from sseclient import SSEClient
 import ujson as json
 import logging
+import pickle
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s.%(funcName)s: %(message)s',
@@ -17,7 +18,7 @@ def process_message(msg, topic, producer):
     logging.info(f"event: {msg.event} id: {msg.id}")
     data = msg.data
     json_data = json.loads(data)
-    producer.produce(topic, str(json_data))
+    producer.produce(topic, pickle.dumps(json_data))
 
 
 if __name__ == "__main__":
