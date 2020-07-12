@@ -60,6 +60,7 @@ def to_stream_tar(file, producer, topic):
             data = read_avro(os.path.join(OUTPUT_PATH, member.name))
             os.remove(os.path.join(OUTPUT_PATH, member.name))
             producer.produce(topic, value=data)
+            producer.flush()
     except Exception as e:
         logging.error(f"Problem {e} with {file}")
     tar.close()
@@ -72,6 +73,7 @@ def to_stream_dir(path_dir, kafka_client):
             topic_name = file.split(".")[0]
             new_topic = admin.NewTopic(topic_name, 1, 1)
             kafka_client.create_topics([new_topic])
+            logging.info(f"Creating topic {topic_name}")
             to_stream_tar(file, producer, topic_name)
 
 
@@ -80,7 +82,7 @@ if __name__ == "__main__":
         download = int(sys.argv[1])
         scrapper(qty=download)
     except Exception as e:
-        logging.info(f"Data loaded: {e}")
+        logging.info(f"Data can't loaded: {e}")
 
     client = admin.AdminClient(KAFKA_CONFIG)
     to_stream_dir(OUTPUT_PATH, client)
